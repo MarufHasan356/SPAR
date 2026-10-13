@@ -9,9 +9,53 @@ SPAR combines:
 3. **Adaptive revalidation** — confidence-consistency training with controlled edge perturbation reduces residual backdoor influence.
 4. **Test-time sanitization** — a budgeted edge-risk mechanism removes likely trigger attachments before evaluation.
 
-The repository also includes the official DShield and RIGBD comparison implementations under `third_party/`. SSP-only code is intentionally not included.
+The source code is distributed as `SPAR-Repository-WebUpload.zip` in this repository. The archive also includes the official DShield and RIGBD comparison implementations under `third_party/`. SSP-only code is intentionally not included.
 
-## Repository layout
+## Download and Reproduce
+
+1. Download `SPAR-Repository-WebUpload.zip` from this repository.
+2. Extract the ZIP file.
+3. Open a terminal inside the extracted folder.
+
+Install the Python dependencies:
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pip install -e .
+```
+
+Restore the official DShield/RIGBD source and large baseline assets that were removed from the web-upload archive:
+
+```bash
+python experiments/setup_third_party.py
+```
+
+Run a SPAR example:
+
+```bash
+python experiments/run_spar.py \
+  --dataset Cora \
+  --architecture gcn \
+  --seed 0 \
+  --defense spar
+```
+
+Run the undefended control:
+
+```bash
+python experiments/run_spar.py \
+  --dataset Cora \
+  --architecture gcn \
+  --seed 0 \
+  --defense none
+```
+
+Python 3.10 or newer is recommended. For CUDA, install the PyTorch and PyTorch Geometric wheels matching your CUDA version before installing the remaining requirements.
+
+Planetoid datasets are downloaded automatically by PyTorch Geometric into `data/` on the first SPAR run.
+
+## Repository Layout After Extraction
 
 ```text
 .
@@ -35,45 +79,21 @@ The repository also includes the official DShield and RIGBD comparison implement
 └── pyproject.toml
 ```
 
-## Installation
+## Supported Experiments
 
-Python 3.10 or newer is recommended.
+Supported datasets:
 
-```bash
-git clone <your-repository-url>
-cd SPAR-Repository
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m pip install -e .
-```
+- Cora
+- CiteSeer
+- PubMed
 
-For CUDA, install the PyTorch and PyTorch Geometric wheels matching your CUDA version before installing the remaining requirements.
+Supported architectures:
 
-Planetoid datasets are downloaded automatically by PyTorch Geometric into `data/` on the first SPAR run.
+- GCN
+- GAT
+- GraphSAGE
 
-## Main SPAR result
-
-```bash
-python experiments/run_spar.py \
-  --dataset Cora \
-  --architecture gcn \
-  --seed 0 \
-  --defense spar
-```
-
-Undefended control:
-
-```bash
-python experiments/run_spar.py \
-  --dataset Cora \
-  --architecture gcn \
-  --seed 0 \
-  --defense none
-```
-
-Supported datasets are `Cora`, `CiteSeer`, and `PubMed`. Supported architectures are `gcn`, `gat`, and `graphsage`.
-
-## Architecture transfer sweep
+## Architecture Transfer Sweep
 
 The following command runs the frozen-attack transfer study:
 
@@ -93,10 +113,13 @@ The aggregate file is saved to:
 results/architecture_sweep.csv
 ```
 
-## Ablation and component analysis
+## Ablation and Component Analysis
 
 ```bash
-python experiments/run_ablation.py --dataset Cora --architecture gcn --seed 0
+python experiments/run_ablation.py \
+  --dataset Cora \
+  --architecture gcn \
+  --seed 0
 ```
 
 This evaluates:
@@ -107,7 +130,7 @@ This evaluates:
 - without adaptive revalidation
 - without test-time sanitization
 
-## Robustness studies
+## Robustness Studies
 
 Poisoning-rate sweep:
 
@@ -125,7 +148,7 @@ python experiments/run_robustness.py \
   --mode trigger-size
 ```
 
-## Efficiency measurement
+## Efficiency Measurement
 
 ```bash
 python experiments/run_efficiency.py \
@@ -134,7 +157,7 @@ python experiments/run_efficiency.py \
   --repeats 3
 ```
 
-## Multi-seed validation
+## Multi-Seed Validation
 
 ```bash
 python experiments/run_multi_seed.py \
@@ -143,7 +166,7 @@ python experiments/run_multi_seed.py \
   --seeds 0 1 2 3 4
 ```
 
-## Official baseline commands
+## Official Baseline Commands
 
 Print the DShield command:
 
@@ -165,14 +188,6 @@ python experiments/run_baselines.py --method rigbd --dataset Cora --execute
 
 For RIGBD datasets beyond Cora, download the official authors' assets and update the file paths in `experiments/run_baselines.py` before execution.
 
-## Third-party baseline assets
-
-The full archive includes the packaged DShield and RIGBD assets. If you use the smaller web-upload archive, restore the official third-party source and large assets with:
-
-```bash
-python experiments/setup_third_party.py
-```
-
 ## Metrics
 
 Each run writes a JSON file and appends to `results/experiment_results.csv`.
@@ -190,7 +205,7 @@ Each run writes a JSON file and appends to `results/experiment_results.csv`.
 python -m pytest tests/
 ```
 
-## Reproducibility notes
+## Reproducibility Notes
 
 - Every SPAR run fixes Python, NumPy, PyTorch, and CUDA seeds.
 - The attack is frozen across architectures in the sweep.
@@ -199,6 +214,6 @@ python -m pytest tests/
 - Clean accuracy is computed only on non-poisoned test nodes.
 - Baseline implementations remain isolated in `third_party/` so the SPAR contribution is not conflated with prior defenses.
 
-## Third-party code
+## Third-Party Code
 
-See `THIRD_PARTY_NOTICES.md` for attribution, source links, licenses, and citation information.
+See `THIRD_PARTY_NOTICES.md` inside the extracted archive for attribution, source links, licenses, and citation information.
